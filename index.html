@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalMatrix – Day, Week, Month, and 10-Year Vision</title>
+    <meta name="description" content="GoalMatrix is a premium self-improvement app to track long-term goals, log daily reflections, and plan your schedules.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 🔐 PIN Lock Screen Overlay -->
+    <div id="lock-screen-overlay" class="hidden">
+        <div class="pin-pad-container glass-panel" style="padding: 30px;">
+            <svg style="width: 44px; height: 44px; stroke: var(--primary-color); fill: none; stroke-width: 2; margin-bottom: 8px;" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 4px;">Security App Lock</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">Enter PIN code to unlock GoalMatrix</p>
+            
+            <div class="pin-dots">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            
+            <div class="pin-grid">
+                <button type="button" class="pin-btn" data-value="1">1</button>
+                <button type="button" class="pin-btn" data-value="2">2</button>
+                <button type="button" class="pin-btn" data-value="3">3</button>
+                <button type="button" class="pin-btn" data-value="4">4</button>
+                <button type="button" class="pin-btn" data-value="5">5</button>
+                <button type="button" class="pin-btn" data-value="6">6</button>
+                <button type="button" class="pin-btn" data-value="7">7</button>
+                <button type="button" class="pin-btn" data-value="8">8</button>
+                <button type="button" class="pin-btn" data-value="9">9</button>
+                <button type="button" class="pin-btn pin-btn-special" id="pin-clear">CLEAR</button>
+                <button type="button" class="pin-btn" data-value="0">0</button>
+                <button type="button" class="pin-btn pin-btn-special" style="visibility: hidden;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔑 Authentication Section -->
+    <div id="auth-section" class="auth-wrapper">
+        <!-- Login Form Card -->
+        <div id="login-div" class="auth-card glass-panel">
+            <div class="auth-header">
+                <div class="logo" style="justify-content: center; font-size: 34px;">GoalMatrix</div>
+                <p style="color: var(--text-secondary); margin-top: 6px;">Sign in to your dashboard</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" class="form-control" placeholder="name@domain.com" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary glow-effect" style="width: 100%; margin-top: 12px;">Log In</button>
+            </form>
+            
+            <p class="auth-toggle">Don't have an account? <span id="to-signup">Sign Up</span></p>
+        </div>
+
+        <!-- Sign Up Form Card -->
+        <div id="signup-div" class="auth-card glass-panel hidden">
+            <div class="auth-header">
+                <div class="logo" style="justify-content: center; font-size: 34px;">GoalMatrix</div>
+                <p style="color: var(--text-secondary); margin-top: 6px;">Create a new account</p>
+            </div>
+            
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" class="form-control" placeholder="John Doe" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" class="form-control" placeholder="name@domain.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-primary glow-effect" style="width: 100%; margin-top: 12px;">Create Account</button>
+            </form>
+            
+            <p class="auth-toggle">Already registered? <span id="to-login">Log In</span></p>
+        </div>
+    </div>
+
+    <!-- 📱 Main Application Area -->
+    <div id="app-main" class="hidden">
+        <div id="app-container">
+            
+            <!-- Header bar -->
+            <header>
+                <div class="logo">
+                    <svg style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2.5;" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                        <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                        <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                    </svg>
+                    GoalMatrix
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Streak tracking flame badge -->
+                    <div class="streak-badge" id="streak-badge-container">
+                        <span>🔥</span>
+                        <span id="streak-count-display">0</span> days
+                    </div>
+                    
+                    <!-- Theme toggle button -->
+                    <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+                        <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+                    
+                    <!-- Logout button -->
+                    <button class="icon-btn" id="logout-btn" title="Sign Out">
+                        <svg style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div style="margin-bottom: 24px; font-size: 14px; color: var(--text-secondary);">
+                Welcome back, <span id="user-display-name" style="font-weight: 700; color: var(--primary-color);">Guest</span>
+            </div>
+
+            <!-- 📅 Tab 1: Daily/Weekly/Monthly Planner View (Primary Tab post-login) -->
+            <div id="view-planner" class="view-panel active">
+                <div class="goals-header">
+                    <div>
+                        <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700;">Target Planner</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Organize your schedules across Day, Week, and Month</p>
+                    </div>
+                    <button class="btn-primary" onclick="window.showTaskModal()">+ Add Target</button>
+                </div>
+
+                <!-- Sub-tabs for Day, Week, Month targets -->
+                <div class="planner-tabs">
+                    <button class="planner-tab-btn active" id="btn-planner-day">Daily Tasks</button>
+                    <button class="planner-tab-btn" id="btn-planner-week">Weekly Targets</button>
+                    <button class="planner-tab-btn" id="btn-planner-month">Monthly Milestones</button>
+                </div>
+
+                <!-- Progress Tracker -->
+                <div class="planner-progress glass-panel">
+                    <span id="planner-progress-label" style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Day Progress</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="planner-progress-fill"></div>
+                    </div>
+                    <span class="progress-percentage" id="planner-progress-pct">0%</span>
+                </div>
+
+                <!-- 📅 SECTION 1: Daily targets -->
+                <div id="section-planner-day" class="target-section active">
+                    <div class="reflection-date-picker glass-panel" style="padding: 10px; margin-bottom: 16px;">
+                        <button class="icon-btn" id="plan-prev-day" style="width: 28px; height: 28px; font-size: 11px;">◄</button>
+                        <div class="ref-date-display" id="planner-date-display" style="font-size: 15px;">June 15</div>
+                        <button class="icon-btn" id="plan-next-day" style="width: 28px; height: 28px; font-size: 11px;">►</button>
+                        <button class="btn-secondary" id="plan-today-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px;">Today</button>
+                    </div>
+                    <div class="task-list" id="planner-tasks-list">
+                        <!-- Checklist loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- 📅 SECTION 2: Weekly targets -->
+                <div id="section-planner-week" class="target-section">
+                    <div class="reflection-date-picker glass-panel" style="padding: 10px; margin-bottom: 16px;">
+                        <button class="icon-btn" id="plan-prev-week" style="width: 28px; height: 28px; font-size: 11px;">◄</button>
+                        <div class="ref-date-display" id="planner-week-display" style="font-size: 15px;">Week 25, 2026</div>
+                        <button class="icon-btn" id="plan-next-week" style="width: 28px; height: 28px; font-size: 11px;">►</button>
+                        <button class="btn-secondary" id="plan-this-week-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px;">This Week</button>
+                    </div>
+                    <div class="task-list" id="planner-week-list">
+                        <!-- Checklist loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- 📅 SECTION 3: Monthly targets -->
+                <div id="section-planner-month" class="target-section">
+                    <div class="reflection-date-picker glass-panel" style="padding: 10px; margin-bottom: 16px;">
+                        <button class="icon-btn" id="plan-prev-month" style="width: 28px; height: 28px; font-size: 11px;">◄</button>
+                        <div class="ref-date-display" id="planner-month-display" style="font-size: 15px;">June 2026</div>
+                        <button class="icon-btn" id="plan-next-month" style="width: 28px; height: 28px; font-size: 11px;">►</button>
+                        <button class="btn-secondary" id="plan-this-month-btn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px;">This Month</button>
+                    </div>
+                    <div class="task-list" id="planner-month-list">
+                        <!-- Checklist loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🎯 Tab 2: 10-Year Goals View (Second tab) -->
+            <div id="view-goals" class="view-panel">
+                <div class="goals-header">
+                    <div>
+                        <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700;">10-Year Vision Goals</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Visualize, write, and check off your decade dreams</p>
+                    </div>
+                    <button class="btn-primary" onclick="window.showGoalModal()">+ New Goal</button>
+                </div>
+
+                <div class="goals-grid" id="goals-list">
+                    <!-- Dynamically populated goal cards -->
+                </div>
+            </div>
+
+            <!-- 📝 Tab 3: Daily Reflection View -->
+            <div id="view-reflection" class="view-panel">
+                <div class="reflection-date-picker glass-panel">
+                    <button class="icon-btn" id="ref-prev-day">◄</button>
+                    <div class="ref-date-display" id="reflection-date-display">Monday, June 15</div>
+                    <button class="icon-btn" id="ref-next-day">►</button>
+                </div>
+
+                <!-- Daily Quote Banner -->
+                <div class="quote-banner glass-panel" style="margin-bottom: 24px; border-left: 4px solid var(--primary-color);">
+                    <div class="card-content-wrapper">
+                        <p id="reflection-quote-text">"Small daily improvements over time lead to stunning results."</p>
+                        <span id="reflection-quote-author">— Robin Sharma</span>
+                    </div>
+                </div>
+
+                <!-- Reflection Form -->
+                <form id="reflection-form" class="reflection-body">
+                    <!-- What went GOOD -->
+                    <div class="ref-section glass-panel">
+                        <div class="ref-section-title good">
+                            <span>✅</span> What did you do GOOD today?
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Log achievements, self-discipline, or positive habits.</p>
+                        <textarea class="ref-textarea" id="ref-good-input" placeholder="Today I completed my coding goals, read 15 pages..."></textarea>
+                    </div>
+
+                    <!-- What went BAD / can improve -->
+                    <div class="ref-section glass-panel">
+                        <div class="ref-section-title bad">
+                            <span>❌</span> What went BAD / can be improved?
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Review moments of laziness, friction, or habits you want to break.</p>
+                        <textarea class="ref-textarea" id="ref-bad-input" placeholder="I wasted time checking social media, skipped gym..."></textarea>
+                    </div>
+
+                    <!-- Daily Mood rating -->
+                    <div class="ref-section glass-panel">
+                        <div class="rating-row">
+                            <div>
+                                <h4 style="font-family: var(--font-heading); font-size: 15px; font-weight: 600;">Daily Performance Score</h4>
+                                <p style="font-size: 12px; color: var(--text-secondary);">How do you rate your overall performance today?</p>
+                            </div>
+                            <div class="rating-stars" id="ref-rating-stars" data-selected-rating="0">
+                                <!-- Emojis dynamically rendered -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary glow-effect" style="width:100%; padding: 14px; font-size: 16px;">Save Daily Reflection</button>
+                    <button type="button" class="btn-secondary" id="ref-today-btn" style="width:100%;">Jump to Today</button>
+                </form>
+            </div>
+
+            <!-- 📊 Tab 4: Insights & Analytics -->
+            <div id="view-insights" class="view-panel">
+                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin-bottom: 20px;">Insights & Analytics</h2>
+                
+                <div class="analytics-grid">
+                    <div class="analytic-card glass-panel spotlight-card">
+                        <div class="card-content-wrapper">
+                            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Active Streak</span>
+                            <div class="analytic-val" id="insights-streak">🔥 0 Days</div>
+                        </div>
+                    </div>
+                    <div class="analytic-card glass-panel spotlight-card">
+                        <div class="card-content-wrapper">
+                            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">10-Year Goals</span>
+                            <div class="analytic-val" id="insights-goals-count">0 Set</div>
+                        </div>
+                    </div>
+                    <div class="analytic-card glass-panel spotlight-card">
+                        <div class="card-content-wrapper">
+                            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Completed Targets</span>
+                            <div class="analytic-val" id="insights-targets-count">0 Done</div>
+                        </div>
+                    </div>
+                    <div class="analytic-card glass-panel spotlight-card">
+                        <div class="card-content-wrapper">
+                            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">Reflections Logged</span>
+                            <div class="analytic-val" id="insights-reflections-count">0 Days</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section glass-panel spotlight-card">
+                    <div class="card-content-wrapper">
+                        <h3>Motivational Quotes Log</h3>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height:1.5;">
+                            A selection of quotes to fuel your weekly targets and keep you moving towards your 10-year vision.
+                        </p>
+                        <div class="quote-banner glass-panel" id="insights-quotes-rotator" style="margin-bottom:0; background: rgba(0,0,0,0.2);">
+                            <p style="font-size:15px; font-style:italic;" id="insights-quote-text">"You are great. You can achieve anything!"</p>
+                            <span id="insights-quote-author" style="font-size: 12px; color: var(--text-muted);">— Affirmation</span>
+                        </div>
+                        <button class="btn-secondary mt-12" id="insights-next-quote-btn" style="padding: 6px 12px; font-size:11px;">Next Quote ↻</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ⚙️ Tab 5: Settings & Customizations (Last Tab) -->
+            <div id="view-settings" class="view-panel">
+                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin-bottom: 20px;">Settings & Security</h2>
+
+                <!-- Preferences Panel -->
+                <div class="settings-section glass-panel spotlight-card">
+                    <div class="card-content-wrapper">
+                        <h3>UI & Personalization</h3>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <span class="setting-title">Theme (Light Mode)</span>
+                                <span class="setting-desc">Switch between cyber dark and clean light layouts.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="settings-theme-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security App Lock Panel -->
+                <div class="settings-section glass-panel spotlight-card">
+                    <div class="card-content-wrapper">
+                        <h3>Basic Security & Locks</h3>
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <span class="setting-title">PIN Code App Lock</span>
+                                <span class="setting-desc">Prompt for a 4-digit PIN when opening the app.</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="settings-pin-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <button class="btn-secondary" id="settings-pin-btn" style="display: none; padding: 6px 12px; font-size: 12px;">Change Security PIN</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Notifications/Reminders Simulator -->
+                <div class="settings-section glass-panel spotlight-card">
+                    <div class="card-content-wrapper">
+                        <h3>Reminders & Notifications</h3>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
+                            Enable evening browser notifications (9 PM) to ensure reflection consistency.
+                        </p>
+                        <div class="flex gap-12">
+                            <button class="btn-primary" id="request-notif-btn">Enable Notifications</button>
+                            <button class="btn-secondary" id="simulate-notif-btn">Simulate 9 PM reminder</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Local backup/restore panel -->
+                <div class="settings-section glass-panel spotlight-card">
+                    <div class="card-content-wrapper">
+                        <h3>Backup & Data Sync</h3>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
+                            Export all your goals, planner schedules, and daily reflections to a JSON file, or restore a previous snapshot.
+                        </p>
+                        <div class="flex gap-12">
+                            <button class="btn-secondary" id="export-backup-btn">Export Data Backup</button>
+                            <label class="btn-primary" style="margin: 0; cursor: pointer;">
+                                Import Backup File
+                                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 👑 Tab 6: Maker Admin Panel (Hidden unless logged in as admin) -->
+            <div id="view-admin" class="view-panel">
+                <div class="goals-header">
+                    <div>
+                        <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700;">Maker Admin Portal</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Manage platform users, inspect activity logs, and backup system databases</p>
+                    </div>
+                </div>
+
+                <!-- Metric Summary Widget -->
+                <div class="settings-section glass-panel" style="padding: 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                    <div>
+                        <h4 style="color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Total Registered Users</h4>
+                        <span style="font-size: 36px; font-weight: 800; color: var(--accent-color);" id="admin-total-users">0</span>
+                    </div>
+                    <div class="flex gap-12">
+                        <button class="btn-secondary" id="admin-export-db-btn">Export System DB</button>
+                        <label class="btn-primary" style="margin: 0; cursor: pointer;">
+                            Import System DB
+                            <input type="file" id="admin-import-file-input" accept=".json" style="display: none;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Registered Users List Table -->
+                <div class="settings-section glass-panel">
+                    <h3>Registered Accounts</h3>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User Info</th>
+                                    <th>Role</th>
+                                    <th>Sign-Up Date</th>
+                                    <th>Goals</th>
+                                    <th>Reflections</th>
+                                    <th>Streak</th>
+                                    <th>Planner Tasks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Selected User's Audit Log View Panel -->
+                <div class="settings-section glass-panel hidden" id="admin-audit-panel" style="margin-top: 20px;">
+                    <div class="flex justify-between align-center">
+                        <h3 id="admin-audit-user-title">User - Audit History</h3>
+                        <button class="icon-btn" style="width:24px; height:24px; font-size:10px;" onclick="document.getElementById('admin-audit-panel').classList.add('hidden')">✕</button>
+                    </div>
+                    <div class="audit-log-box" id="admin-audit-logs">
+                        <!-- Loaded logs list -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Floating Navigation Tabs (Order: Planner, Goals, Reflection, Insights, Settings, Admin) -->
+            <nav class="bottom-nav glass-panel">
+                <a class="nav-tab active" id="tab-planner">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Planner</span>
+                </a>
+                <a class="nav-tab" id="tab-goals">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                    <span>Vision</span>
+                </a>
+                <a class="nav-tab" id="tab-reflection">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span>Reflection</span>
+                </a>
+                <a class="nav-tab" id="tab-insights">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>Insights</span>
+                </a>
+                <a class="nav-tab" id="tab-settings">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Settings</span>
+                </a>
+                <a class="nav-tab hidden" id="tab-admin">
+                    <svg viewBox="0 0 24 24">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                    <span>Admin</span>
+                </a>
+            </nav>
+
+        </div>
+    </div>
+
+    <!-- 🎯 MODALS PANEL CONTAINER -->
+    
+    <!-- 10-Year Goal Editor Modal -->
+    <div id="goal-modal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <span class="modal-close" id="goal-modal-close">✕</span>
+            <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 16px;" id="goal-modal-header">Add 10-Year Goal</h3>
+            
+            <form id="goal-modal-form">
+                <div class="form-group">
+                    <label for="goal-modal-title">Goal Vision Title</label>
+                    <input type="text" id="goal-modal-title" class="form-control" placeholder="e.g. Build a SaaS company generating $10k/mo" required>
+                </div>
+                
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label for="goal-modal-category">Category</label>
+                        <select id="goal-modal-category" class="form-control">
+                            <option value="Personal">Personal Growth</option>
+                            <option value="Career">Career/Business</option>
+                            <option value="Health">Health/Fitness</option>
+                            <option value="Finance">Finance/Wealth</option>
+                            <option value="Relationships">Relationships</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="goal-modal-year">Target Year</label>
+                        <input type="number" id="goal-modal-year" class="form-control" min="2026" max="2050" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="goal-modal-status">Current Status</label>
+                    <select id="goal-modal-status" class="form-control">
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Achieved">Achieved</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="goal-modal-affirmation">Weekly Goal Reminder/Affirmation</label>
+                    <input type="text" id="goal-modal-affirmation" class="form-control" placeholder="e.g. You are great. You can achieve anything!">
+                </div>
+
+                <!-- Custom Card Aesthetics background selector -->
+                <div class="form-group">
+                    <label>Card Style (Aesthetics)</label>
+                    <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">
+                        By default, your card renders a glowing glass overlay displaying your affirmation. Customize color preset or upload background photos.
+                    </p>
+                    
+                    <span style="font-size: 11px; font-weight:600; text-transform:uppercase; color:var(--text-muted);">Color Gradients</span>
+                    <div class="color-presets" id="goal-presets-colors">
+                        <!-- Color buttons -->
+                    </div>
+
+                    <span style="font-size: 11px; font-weight:600; text-transform:uppercase; color:var(--text-muted); display:block; margin-top:10px;">Scenic Photo Presets</span>
+                    <div class="img-presets" id="goal-presets-photos">
+                        <!-- Image presets buttons -->
+                    </div>
+
+                    <div style="margin-top: 12px;">
+                        <label for="goal-modal-custom-photo" style="font-size: 11px; color: var(--text-muted);">Custom Photo URL</label>
+                        <input type="url" id="goal-modal-custom-photo" class="form-control" placeholder="https://example.com/photo.jpg" style="padding: 8px 12px; font-size:13px;">
+                    </div>
+                </div>
+
+                <div class="flex gap-12 mt-12" style="margin-top: 24px;">
+                    <button type="submit" class="btn-primary glow-effect" style="flex: 1;">Save Vision</button>
+                    <button type="button" class="btn-danger" id="goal-modal-delete">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Daily/Weekly/Monthly Planner Task Modal -->
+    <div id="task-modal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <span class="modal-close" id="task-modal-close">✕</span>
+            <h3 style="font-family: var(--font-heading); font-weight: 700; margin-bottom: 16px;" id="task-modal-header">Add Target</h3>
+            
+            <form id="task-modal-form">
+                <div class="form-group">
+                    <label for="task-modal-text">Target Description</label>
+                    <input type="text" id="task-modal-text" class="form-control" placeholder="e.g. Read 3 chapters of business startup books" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-modal-priority">Priority Level</label>
+                    <select id="task-modal-priority" class="form-control">
+                        <option value="High">🔴 High Priority</option>
+                        <option value="Medium" selected>🟡 Medium Priority</option>
+                        <option value="Low">🔵 Low Priority</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary glow-effect" style="width: 100%; margin-top: 12px;">Plan Target</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Load ES Modules script -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
